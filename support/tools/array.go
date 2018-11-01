@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func Find(findStr string, array []string) bool {
+func FindArr(findStr string, array []string) bool {
 
 	for _, val := range array {
 		if val == findStr {

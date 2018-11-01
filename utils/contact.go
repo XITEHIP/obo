@@ -49,7 +49,7 @@ func InitContactList(contactsOrig []interface{}) []interface{} {
 		contactByte, _ := json.Marshal(contact)
 		json.Unmarshal(contactByte, contactObj)
 		userName := contactObj.UserName
-		if tools.Find(userName, SPECIAL_USERS) {
+		if tools.FindArr(userName, SPECIAL_USERS) {
 			if s == false {
 				specials.Count = 0
 				s = true

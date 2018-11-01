@@ -124,7 +124,7 @@ func (o *Pipe) listen() {
 	for {
 		ret, sel := api.SyncCheck(o.session.Bc.Lpr, o.session.Bc.Br, o.session.Skl, utils.GetCookies(o.session))
 		fmt.Printf("ret:" + ret + " " + "sel:" + sel + "\n")
-		if tools.Find(ret, quitCurrClientCode) {
+		if tools.FindArr(ret, quitCurrClientCode) {
 			o.errChan <- fmt.Errorf("api blocked, ret:%s", ret)
 			break
 		}
