@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"github.com/mdp/qrterminal"
+	"github.com/xitehip/obo/define"
 	"github.com/xitehip/obo/support"
 	"io/ioutil"
 	"net/http"
@@ -13,7 +14,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"github.com/xitehip/obo/define"
 )
 
 func getUuid() string {
@@ -24,6 +24,7 @@ func getUuid() string {
 	query["_"] = strconv.FormatInt(time.Now().Unix(), 10)
 	response := support.GetHttp().GetBodyStr("https://login.weixin.qq.com/jslogin", query)
 	rs := strings.Split(response, "\"")
+
 	return rs[1]
 }
 
@@ -36,7 +37,7 @@ func ShowQr(lc *define.LoginConfig) {
 		QuietZone: 1,
 	}
 	lc.Uuid = getUuid()
-	qrterminal.GenerateWithConfig("https://login.weixin.qq.com/l/" + lc.Uuid, config)
+	qrterminal.GenerateWithConfig("https://login.weixin.qq.com/l/"+lc.Uuid, config)
 }
 
 func ListenScan(tip int64, lc *define.LoginConfig) (string, string) {
@@ -45,7 +46,7 @@ func ListenScan(tip int64, lc *define.LoginConfig) (string, string) {
 	uv.Add("uuid", lc.Uuid)
 	uv.Add("tip", strconv.FormatInt(tip, 10))
 	uv.Add("r", strconv.FormatInt(time.Now().Unix(), 10))
-	uv.Add("-", strconv.FormatInt(time.Now().Unix(), 10))
+	uv.Add("_", strconv.FormatInt(time.Now().Unix(), 10))
 	url := SERVER_URI_BASE + "login?" + uv.Encode()
 	response := support.GetHttp().GetBodyStr(url, nil)
 	reg := regexp.MustCompile(`(\d){3}`)
@@ -68,5 +69,6 @@ func WebWxNewLoginPage(lc *define.LoginConfig, lpr *define.LoginPageResp) ([]*ht
 	if lpr.Ret != 0 {
 		return nil, fmt.Errorf("xc.Ret != 0: %s", string(body))
 	}
+
 	return resp.Cookies(), nil
 }

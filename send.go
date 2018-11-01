@@ -1,10 +1,9 @@
 package obo
 
-
 import (
-	"net/http"
 	"github.com/xitehip/obo/api"
 	"github.com/xitehip/obo/define"
+	"net/http"
 )
 
 func SendText(s *define.Session, msg, from, to string) {
@@ -20,4 +19,3 @@ func SendImg(s *define.Session, filename string, from, to string,
 	}
 	return api.SendImg(lpr, br, mediaId, from, to, cookies), nil
 }
-

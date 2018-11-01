@@ -9,13 +9,14 @@ import (
 	"github.com/xitehip/obo/support/tools"
 	"github.com/xitehip/obo/utils"
 	"strings"
-	"time"
+	"github.com/xitehip/obo/support"
+	"log"
 )
 
 const (
 	PIPE_NODE_ShowQr = iota
 	PIPE_NODE_Login
-	PIPE_NODE_WebWxNewLoginpage
+	PIPE_NODE_WebWxNewLoginPage
 	PIPE_NODE_WebWxInit
 	PIPE_NODE_Listen
 	PIPE_NODE_Customer
@@ -51,19 +52,18 @@ func New() *Pipe {
 }
 
 func (o *Pipe) AttachPlugins(plugins []plugins.PluginProviderInterface) *Pipe {
-
 	if len(plugins) > 0 {
 		for _, plugin := range plugins {
 			plugin.Register(o.session)
 		}
 	}
+
 	return o
 }
 
 func (o *Pipe) Run() {
 
 	check()
-
 	bc := initCfg()
 
 	o.flowChan <- PIPE_NODE_ShowQr
@@ -74,8 +74,8 @@ func (o *Pipe) Run() {
 			api.ShowQr(bc.Lc)
 			o.flowChan <- PIPE_NODE_Login
 		case PIPE_NODE_Login:
-			o.login(bc.Lc)
-		case PIPE_NODE_WebWxNewLoginpage:
+			o.login(bc.Lc, o.flowChan)
+		case PIPE_NODE_WebWxNewLoginPage:
 			o.webWxNewLoginPage(bc)
 		case PIPE_NODE_WebWxInit:
 			o.webWxInit()
@@ -87,42 +87,38 @@ func (o *Pipe) Run() {
 			break
 		}
 	}
-
-	fmt.Println("obo is exit!")
+	log.Fatal("obo is exit!")
 }
 
-func (o *Pipe) login(lc *define.LoginConfig) {
+func (o *Pipe) login(lc *define.LoginConfig, ch chan int) {
 	tip := int64(1)
-	retryTime := 10
-	fmt.Println("Please scan the qrCode with wechat.")
-	for i := 0; i < retryTime; i++ {
+	support.Cl().Message("Please scan the qrCode with wechat.")
+	for i := 0; i < 10; i++ {
 		code, response := api.ListenScan(tip, lc)
 		switch code {
 		case "201":
-			fmt.Println("Please confirm login in wechat.")
+			support.Cl().Message("Please confirm login in wechat.")
 			tip = 0
 		case "200":
 			rs := strings.Split(response, "\"")
 			lc.Redirect = rs[1] + "&fun=new"
-			o.flowChan <- PIPE_NODE_WebWxNewLoginpage
-			o.after()
+			o.flowChan <- PIPE_NODE_WebWxNewLoginPage
+			o.loginAfter()
 			return
-
 		case "408":
 			tip = 1
-			retryTime -= 1
-			time.Sleep(time.Second * 1)
+			support.Cl().Message("Login timeout, response code 408.")
 		default:
 			tip = 1
-			retryTime -= 1
-			time.Sleep(time.Second * 1)
+			support.Cl().Message("Login error " + code)
 		}
 	}
+	ch <- PIPE_NODE_Exit
 }
 
 func (o *Pipe) listen() {
 	o.flowChan <- PIPE_NODE_Customer
-
+	support.Cl().Message("Begin listen...")
 	quitCurrClientCode := []string{"1100", "1101", "1102", "1205"}
 
 	for {
@@ -147,10 +143,9 @@ func (o *Pipe) customer() {
 	for {
 		select {
 		case err := <-o.errChan:
-			fmt.Println(err.Error())
+			support.Cl().Message(err.Error())
 			//try reload login
 			o.flowChan <- PIPE_NODE_Login
-
 			return
 		case msg := <-o.msgChan:
 			msgMap := make(map[string]interface{})
@@ -172,27 +167,20 @@ func (o *Pipe) webWxNewLoginPage(bc *define.BotConfig) {
 }
 
 func (o *Pipe) webWxInit() {
-	fmt.Println("wx init begin...")
+	support.Cl().Message("wx init begin.")
 	resp := api.WebWxInit(o.session.Bc.Lpr, o.session.Bc.Br)
-	 o.generateSyncKey(resp)
+	utils.GenerateSyncKey(o.session, resp)
 	go o.myself(resp)
 	go o.initContactList("ContactList", resp)
 	o.initFriends()
 	o.initGroups()
 	o.flowChan <- PIPE_NODE_Listen
-	fmt.Println("wx init end...")
-
-}
-
-func (o *Pipe) generateSyncKey(result map[string]interface{}) {
-	syncKey := result["SyncKey"].(map[string]interface{})
-	o.session.Skl = api.SyncKey(syncKey)
+	support.Cl().Message("wx init end.")
 }
 
 func (o *Pipe) initContactList(key string, result map[string]interface{}) {
-
 	cl := result[key].([]interface{})
-	c := api.InitContactList(cl)
+	c := utils.InitContactList(cl)
 	o.session.Specials = c[0].(*define.Specials)
 	o.session.Officials = c[1].(*define.Officials)
 	o.session.Groups = c[2].(*define.Groups)
@@ -200,7 +188,6 @@ func (o *Pipe) initContactList(key string, result map[string]interface{}) {
 }
 
 func (o *Pipe) initFriends() {
-
 	friendsByte := api.WebWxGetContact(o.session.Bc.Lpr, utils.GetCookies(o.session))
 	contactsMap := make(map[string]interface{})
 	json.Unmarshal(friendsByte, &contactsMap)
@@ -224,6 +211,6 @@ func (o *Pipe) webWxStatusNotify() {
 func check() {
 }
 
-func (o *Pipe) after() {
-	fmt.Println("Init  after")
+func (o *Pipe) loginAfter() {
+	support.Cl().Message("Login success!")
 }

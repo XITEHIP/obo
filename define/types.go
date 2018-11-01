@@ -178,5 +178,5 @@ type Session struct {
 	Groups    *Groups
 	Friends   *Friends
 	*PluginsManager
-	MuCookie  sync.Mutex
+	MuCookie sync.Mutex
 }

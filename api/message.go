@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/xitehip/obo/define"
 	"github.com/xitehip/obo/support"
 	"github.com/xitehip/obo/support/tools"
 	"io"
@@ -16,16 +17,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"github.com/xitehip/obo/define"
 )
-
-
 
 func SendMsg(lpr *define.LoginPageResp, br *define.BaseRequest, msg string,
 	from, to string, cookies []*http.Cookie) map[string]interface{} {
 	km := url.Values{}
 	km.Add("pass_ticket", lpr.PassTicket)
-
 	uri := SERVER_URI_BASE + "webwxsendmsg?" + km.Encode()
 	params := make(map[string]interface{})
 	params["BaseRequest"] = br
@@ -48,7 +45,6 @@ func SendMsg(lpr *define.LoginPageResp, br *define.BaseRequest, msg string,
 
 func SendImg(lpr *define.LoginPageResp, br *define.BaseRequest, mediaId string,
 	from, to string, cookies []*http.Cookie) map[string]interface{} {
-
 	km := url.Values{}
 	km.Add("pass_ticket", lpr.PassTicket)
 	km.Add("fun", "async")
@@ -155,7 +151,7 @@ func UploadMedia(filename string, from, to string,
 	u, _ := url.Parse(SERVER_URI_FILE)
 	jar.SetCookies(u, cookies)
 	support.GetHttp().SetJar(jar)
-	body := support.GetHttp().Upload(SERVER_URI_FILE + "webwxuploadmedia?f=json", &b, map[string]string{"Content-Type": w.FormDataContentType()})
+	body := support.GetHttp().Upload(SERVER_URI_FILE+"webwxuploadmedia?f=json", &b, map[string]string{"Content-Type": w.FormDataContentType()})
 	bodyMap := make(map[string]interface{})
 	json.Unmarshal(body, &bodyMap)
 	ret := int(bodyMap["BaseResponse"].(map[string]interface{})["Ret"].(float64))

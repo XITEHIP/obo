@@ -2,7 +2,9 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/xitehip/obo/define"
 	"github.com/xitehip/obo/support"
+	"github.com/xitehip/obo/utils"
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
@@ -10,8 +12,6 @@ import (
 	"regexp"
 	"strconv"
 	"time"
-	"github.com/xitehip/obo/define"
-	"github.com/xitehip/obo/utils"
 )
 
 func WebWxInit(lpr *define.LoginPageResp, br *define.BaseRequest) map[string]interface{} {
@@ -37,32 +37,16 @@ func WebWxStatusNotify(lpr *define.LoginPageResp, br *define.BaseRequest, my *de
 	km := url.Values{}
 	km.Add("pass_ticket", lpr.PassTicket)
 	km.Add("lang", "zh_CN")
-
 	url := SERVER_URI_BASE + "webwxstatusnotify?" + km.Encode()
-
 	params := make(map[string]interface{})
 	params["BaseRequest"] = br
 	params["Code"] = 3
 	params["ClientMsgId"] = int(time.Now().Unix())
 	params["FromUserName"] = my.UserName
 	params["ToUserName"] = my.UserName
-
 	result := support.GetHttp().PostJson(url, params)
 
 	return result
-}
-
-func SyncKey(syncKey map[string]interface{}) *define.SyncKeyList {
-	skl := &define.SyncKeyList{}
-	skl.Count = int(syncKey["Count"].(float64))
-	list := syncKey["List"].([]interface{})
-	sks := make([]define.SyncKey, 0)
-	for _, val := range list {
-		tmp := define.SyncKey{Key: int(val.(map[string]interface{})["Key"].(float64)), Val: int(val.(map[string]interface{})["Val"].(float64))}
-		sks = append(sks, tmp)
-	}
-	skl.List = sks
-	return skl
 }
 
 func SyncCheck(lpr *define.LoginPageResp, br *define.BaseRequest, skl *define.SyncKeyList, cookies []*http.Cookie) (string, string) {
@@ -116,10 +100,10 @@ func WebWxSync(lpr *define.LoginPageResp, br *define.BaseRequest, skl *define.Sy
 	body, _ := ioutil.ReadAll(resp.Body)
 	bodyMap := make(map[string]interface{})
 	json.Unmarshal(body, &bodyMap)
-	if bodyMap["BaseResponse"].(map[string]interface{})["Ret"] == float64(0){
+	if bodyMap["BaseResponse"].(map[string]interface{})["Ret"] == float64(0) {
 		msg <- body
 		skl.List = skl.List[:0]
-		tmp := SyncKey(bodyMap["SyncKey"].(map[string]interface{}))
+		tmp := utils.SyncKey(bodyMap["SyncKey"].(map[string]interface{}))
 		skl.List = append(skl.List, tmp.List...)
 		skl.Count = tmp.Count
 

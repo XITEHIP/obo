@@ -5,4 +5,3 @@ const (
 	MSG_FROM_GROUP
 	MSG_FROM_FILEHELPER
 )
-

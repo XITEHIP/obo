@@ -47,7 +47,7 @@ func ParsingAddMsgList(data []interface{}, callback func(*define.ReceiveMessage)
 func SyncKeyStr(sks []define.SyncKey) string {
 	sksSlice := make([]string, 0)
 	for _, v := range sks {
-		sksSlice = append(sksSlice, strconv.Itoa(v.Key) + "_" + strconv.Itoa(v.Val))
+		sksSlice = append(sksSlice, strconv.Itoa(v.Key)+"_"+strconv.Itoa(v.Val))
 	}
 	return strings.Join(sksSlice, "|")
 }
@@ -64,6 +64,24 @@ func GetMyself(myOrig map[string]interface{}) *define.Myself {
 		}
 	}
 	return myself
+}
+
+func SyncKey(syncKey map[string]interface{}) *define.SyncKeyList {
+	skl := &define.SyncKeyList{}
+	skl.Count = int(syncKey["Count"].(float64))
+	list := syncKey["List"].([]interface{})
+	sks := make([]define.SyncKey, 0)
+	for _, val := range list {
+		tmp := define.SyncKey{Key: int(val.(map[string]interface{})["Key"].(float64)), Val: int(val.(map[string]interface{})["Val"].(float64))}
+		sks = append(sks, tmp)
+	}
+	skl.List = sks
+	return skl
+}
+
+func GenerateSyncKey(s *define.Session, result map[string]interface{}) {
+	syncKey := result["SyncKey"].(map[string]interface{})
+	s.Skl = SyncKey(syncKey)
 }
 
 func SetCookies(s *define.Session, cookies []*http.Cookie) {
