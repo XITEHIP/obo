@@ -1,9 +1,11 @@
 package main
 
-import "github.com/xitehip/obo/pipe"
 import "github.com/xitehip/obo/plugins"
 import "github.com/xitehip/obo/plugins/filehelper"
-import "github.com/xitehip/obo/plugins/group"
+import (
+	"github.com/xitehip/obo/plugins/group"
+	"github.com/xitehip/obo/pipe"
+)
 
 func main() {
 
@@ -15,5 +17,14 @@ func main() {
 	group := &group.CustomerService{}
 	plugins = append(plugins, group)
 
-	pipe.New().AttachPlugins(plugins).Run()
+	pipe := pipe.New().AttachPlugins(plugins)
+
+	pipe.Run()
+
+
+
+
+
+
+
 }

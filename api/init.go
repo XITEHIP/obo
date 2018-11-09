@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"strconv"
 	"time"
+	"fmt"
 )
 
 func WebWxInit(lpr *define.LoginPageResp, br *define.BaseRequest) map[string]interface{} {
@@ -111,4 +112,12 @@ func WebWxSync(lpr *define.LoginPageResp, br *define.BaseRequest, skl *define.Sy
 	}
 
 	return nil
+}
+
+func Akc()  {
+	uri := "https://api.aikucun.com/api/v2.0/live.do?action=getProductAct&appid=12873432&did=E8C8A397571E4D85918F84A98C8DBF65&lastxuhao=0&liveid=2c9089c266c533e20166c878ad970bf5&noncestr=bahnvibu&sig=e3ed06e6d9f77dc898d62c87d51f6b2d225ec7f9&subuserid=3e9f7deb5926d246da9d852341c44823&timestamp=1541091984&token=18995be9bde742c49a76e9d490cb718e&userid=5d99a4fcdf2a6b84bd132dd33e14b6b6	200	GET	api.aikucun.com	/api/v2.0/live.do?action=getProductAct&appid=12873432&did=E8C8A397571E4D85918F84A98C8DBF65&lastxuhao=0&liveid=2c9089c266c533e20166c878ad970bf5&noncestr=bahnvibu&sig=e3ed06e6d9f77dc898d62c87d51f6b2d225ec7f9&subuserid=3e9f7deb5926d246da9d852341c44823&timestamp=1541091984&token=18995be9bde742c49a76e9d490cb718e&userid=5d99a4fcdf2a6b84bd132dd33e14b6b6"
+
+	resp := support.GetHttp().GetBodyStr(uri, nil)
+
+	fmt.Println(resp)
 }

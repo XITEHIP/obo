@@ -29,6 +29,13 @@ type Pipe struct {
 	session  *define.Session
 	errChan  chan error
 	msgChan  chan []byte
+	receiveMsgChan chan string
+	transmit define.TransmitFun
+}
+
+
+func (o *Pipe)Session() *define.Session  {
+	return o.session
 }
 
 func initCfg() *define.BotConfig {
@@ -48,6 +55,8 @@ func New() *Pipe {
 	o.session = &define.Session{}
 	o.session.PluginsManager = &define.PluginsManager{Handles: make(map[string]define.Handle)}
 
+	o.receiveMsgChan = make(chan string)
+
 	return o
 }
 
@@ -60,6 +69,16 @@ func (o *Pipe) AttachPlugins(plugins []plugins.PluginProviderInterface) *Pipe {
 
 	return o
 }
+
+//绑定转发消息
+func (o *Pipe) AttachTransmit(f define.TransmitFun) *Pipe {
+
+	if f != nil {
+		o.transmit = f
+	}
+	return o
+}
+
 
 func (o *Pipe) Run() {
 
@@ -80,6 +99,8 @@ func (o *Pipe) Run() {
 		case PIPE_NODE_WebWxInit:
 			o.webWxInit()
 		case PIPE_NODE_Listen:
+
+			//go o.receiveListen()
 			go o.listen()
 		case PIPE_NODE_Customer:
 			o.customer()
@@ -152,7 +173,7 @@ func (o *Pipe) customer() {
 			json.Unmarshal(msg, &msgMap)
 			if int(msgMap["AddMsgCount"].(float64)) > 0 {
 				utils.ParsingAddMsgList(msgMap["AddMsgList"].([]interface{}), func(message *define.ReceiveMessage) {
-					plugins.Fire(o.session, message)
+					plugins.Fire(o.session, message, o.transmit)
 				})
 			}
 		}
@@ -213,4 +234,16 @@ func check() {
 
 func (o *Pipe) loginAfter() {
 	support.Cl().Message("Login success!")
+}
+
+//其他系统主动发送给obo text msg
+func (o *Pipe)receiveListen()  {
+	support.TcpServer(o.receiveMsgChan)
+	for msg := range o.receiveMsgChan {
+		api.SendMsg(o.session.Bc.Lpr, o.session.Bc.Br, msg, o.session.Myself.UserName, "filehelper", o.session.Cookies)
+	}
+}
+
+func (o *Pipe)SendMsg(msg string, from string, to string )  {
+	api.SendMsg(o.session.Bc.Lpr, o.session.Bc.Br, msg, from, to, o.session.Cookies)
 }

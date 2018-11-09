@@ -115,6 +115,7 @@ func (o *HttpClient) httpDo(method string, url string, params map[string]interfa
 		checkErr(err)
 	}
 	//req.Header.Set("Content-Type", "application/json; charset=UTF-8")
+
 	if err != nil {
 		checkErr(err)
 	}
@@ -151,6 +152,6 @@ func (o *HttpClient) SetJar(jar http.CookieJar) {
 
 func checkErr(err error) {
 	if err != nil {
-		panic("http error:" + err.Error())
+		Cl().Error("http error:" + err.Error())
 	}
 }

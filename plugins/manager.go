@@ -18,10 +18,13 @@ func Register(s *define.Session, key string, handle define.Handle) error {
 	return nil
 }
 
-func Fire(s *define.Session, message *define.ReceiveMessage) {
+func Fire(s *define.Session, message *define.ReceiveMessage, t define.TransmitFun) {
 	if len(s.PluginsManager.Handles) > 0 {
 		for _, plugin := range s.Handles {
-			plugin(s, message)
+			f := plugin(s, message)
+			if f != nil && t != nil {
+				f(t)//Message transmit
+			}
 		}
 	}
 }

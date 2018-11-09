@@ -162,7 +162,7 @@ type ReceiveMessage struct {
 	Url          string
 }
 
-type Handle func(*Session, *ReceiveMessage)
+type Handle func(*Session, *ReceiveMessage)func(TransmitFun)
 
 type PluginsManager struct {
 	Handles map[string]Handle
@@ -180,3 +180,5 @@ type Session struct {
 	*PluginsManager
 	MuCookie sync.Mutex
 }
+
+type TransmitFun func(string)
