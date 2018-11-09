@@ -115,7 +115,6 @@ func (o *HttpClient) httpDo(method string, url string, params map[string]interfa
 		checkErr(err)
 	}
 	//req.Header.Set("Content-Type", "application/json; charset=UTF-8")
-
 	if err != nil {
 		checkErr(err)
 	}
