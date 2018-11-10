@@ -24,6 +24,7 @@ func getUuid() string {
 	query["_"] = strconv.FormatInt(time.Now().Unix(), 10)
 	response := support.GetHttp().GetBodyStr("https://login.weixin.qq.com/jslogin", query)
 	rs := strings.Split(response, "\"")
+	fmt.Println(rs[1])
 	return rs[1]
 }
 
