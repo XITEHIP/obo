@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"strings"
 	"time"
+	"errors"
 )
 
 type HttpClient struct {
@@ -19,8 +20,26 @@ type HttpClient struct {
 
 var httpObj *HttpClient
 
+var err error
+
 func GetHttp() *HttpClient {
 	if httpObj == nil {
+
+
+		defer func() {
+			if r := recover(); r != nil {
+				switch x := r.(type) {
+				case string:
+					err = errors.New(x)
+				case error:
+					err = x
+				default:
+					err = errors.New("Unknow panic")
+				}
+				Cl().Error(err.Error())
+			}
+		}()
+
 
 		var netTransport = &http.Transport{
 			Proxy: http.ProxyFromEnvironment,
