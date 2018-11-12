@@ -81,3 +81,14 @@ func InitContactList(contactsOrig []interface{}) []interface{} {
 	}
 	return []interface{}{specials, officials, groups, friends}
 }
+
+func GetFriendByNickName(s *define.Session, nickname string) string {
+	if len(s.Friends.List) > 0 {
+		for _, friend := range s.Friends.List {
+			if friend.NickName == nickname {
+				return friend.UserName
+			}
+		}
+	}
+	return ""
+}

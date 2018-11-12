@@ -24,7 +24,7 @@ func getUuid() string {
 	query["_"] = strconv.FormatInt(time.Now().Unix(), 10)
 	response := support.GetHttp().GetBodyStr("https://login.weixin.qq.com/jslogin", query)
 	rs := strings.Split(response, "\"")
-	fmt.Println(rs[1])
+
 	return rs[1]
 }
 
@@ -37,8 +37,9 @@ func ShowQr(lc *define.LoginConfig) {
 		QuietZone: 1,
 	}
 	lc.Uuid = getUuid()
-	fmt.Println("https://login.weixin.qq.com/l/"+lc.Uuid)
-	qrterminal.GenerateWithConfig("https://login.weixin.qq.com/l/"+lc.Uuid, config)
+	url := "https://login.weixin.qq.com/l/"+lc.Uuid
+	fmt.Println(url)
+	qrterminal.GenerateWithConfig(url, config)
 }
 
 func ListenScan(tip int64, lc *define.LoginConfig) (string, string) {

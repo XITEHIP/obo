@@ -23,6 +23,8 @@ const (
 	PIPE_NODE_Exit
 )
 
+var isInit = false
+
 type Pipe struct {
 	flowChan chan int
 	Traces   []int
@@ -32,7 +34,6 @@ type Pipe struct {
 	receiveMsgChan chan string
 	transmit define.TransmitFun
 }
-
 
 func (o *Pipe)Session() *define.Session  {
 	return o.session
@@ -54,7 +55,6 @@ func New() *Pipe {
 	o.msgChan = make(chan []byte, 1024)
 	o.session = &define.Session{}
 	o.session.PluginsManager = &define.PluginsManager{Handles: make(map[string]define.Handle)}
-
 	o.receiveMsgChan = make(chan string)
 
 	return o
@@ -90,6 +90,7 @@ func (o *Pipe) Run() {
 	for {
 		switch <-o.flowChan {
 		case PIPE_NODE_ShowQr:
+			isInit = false
 			api.ShowQr(bc.Lc)
 			o.flowChan <- PIPE_NODE_Login
 		case PIPE_NODE_Login:
@@ -99,7 +100,7 @@ func (o *Pipe) Run() {
 		case PIPE_NODE_WebWxInit:
 			o.webWxInit()
 		case PIPE_NODE_Listen:
-
+			isInit = true
 			//go o.receiveListen()
 			go o.listen()
 		case PIPE_NODE_Customer:
@@ -109,6 +110,10 @@ func (o *Pipe) Run() {
 		}
 	}
 	log.Fatal("obo is exit!")
+}
+
+func (o *Pipe)IsInited() bool {
+	return isInit
 }
 
 func (o *Pipe) login(lc *define.LoginConfig, ch chan int) {
@@ -139,7 +144,7 @@ func (o *Pipe) login(lc *define.LoginConfig, ch chan int) {
 
 func (o *Pipe) listen() {
 	o.flowChan <- PIPE_NODE_Customer
-	support.Cl().Message("Begin listen...")
+	support.Cl().Message("obo begin listen...")
 	quitCurrClientCode := []string{"1100", "1101", "1102", "1205"}
 
 	for {
