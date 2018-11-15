@@ -25,22 +25,6 @@ var err error
 func GetHttp() *HttpClient {
 	if httpObj == nil {
 
-
-		defer func() {
-			if r := recover(); r != nil {
-				switch x := r.(type) {
-				case string:
-					err = errors.New(x)
-				case error:
-					err = x
-				default:
-					err = errors.New("Unknow panic")
-				}
-				Cl().Error(err.Error())
-			}
-		}()
-
-
 		var netTransport = &http.Transport{
 			Proxy: http.ProxyFromEnvironment,
 		}
@@ -67,6 +51,20 @@ func (o *HttpClient) GetBodyByte(url string, query map[string]string) []byte {
 		checkErr(err)
 	}
 	return body
+}
+
+//Get body byte
+func (o *HttpClient) GetBodyMap(url string, query map[string]string) map[string]interface{} {
+	resp := o.Get(url, query)
+	body, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	if err != nil {
+		checkErr(err)
+	}
+	result := make(map[string]interface{})
+	json.Unmarshal(body, &result)
+
+	return result
 }
 
 // Get body string
@@ -122,6 +120,21 @@ func (o *HttpClient) PostJsonResp(url string, params map[string]interface{}) *ht
 
 //base http
 func (o *HttpClient) httpDo(method string, url string, params map[string]interface{}) *http.Response {
+
+	defer func() {
+		if r := recover(); r != nil {
+			switch x := r.(type) {
+			case string:
+				err = errors.New(x)
+			case error:
+				err = x
+			default:
+				err = errors.New("Unknow panic")
+			}
+			Cl().Error(err.Error())
+		}
+	}()
+
 	if params == nil {
 		params = make(map[string]interface{})
 	}
@@ -173,3 +186,23 @@ func checkErr(err error) {
 		Cl().Error("http error:" + err.Error())
 	}
 }
+
+
+func(o *HttpClient) PostForm(u string, values url.Values) map[string]interface{} {
+	resp, err := http.PostForm(u, values)
+
+	if err != nil {
+		checkErr(err)
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		checkErr(err)
+	}
+	result := make(map[string]interface{})
+	json.Unmarshal(body, &result)
+
+	return result
+}
+
