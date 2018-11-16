@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 	"errors"
+	"fmt"
 )
 
 type HttpClient struct {
@@ -44,7 +45,17 @@ func GetHttp() *HttpClient {
 
 //Get body byte
 func (o *HttpClient) GetBodyByte(url string, query map[string]string) []byte {
+
+	defer func() {
+		if r := recover(); r != nil {
+			Cl().Error(fmt.Sprintf("GetBodyByte:%s", r))
+		}
+	}()
+
 	resp := o.Get(url, query)
+	if resp == nil {
+		return nil
+	}
 	body, err := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	if err != nil {

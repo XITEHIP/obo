@@ -59,7 +59,7 @@ func (o *Console)output(msg string, level int)  {
 	}
 	formatStr := format(msg, levelStr)
 	if levelStr == "ERR" {
-		log.Println()
+		log.Println(formatStr)
 	} else {
 		fmt.Println(formatStr)
 	}
