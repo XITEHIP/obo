@@ -66,6 +66,11 @@ func (o *HttpClient) GetBodyByte(url string, query map[string]string) []byte {
 
 //Get body byte
 func (o *HttpClient) GetBodyMap(url string, query map[string]string) map[string]interface{} {
+	defer func() {
+		if r := recover(); r != nil {
+			Cl().Error(fmt.Sprintf("GetBodyMap:%s", r))
+		}
+	}()
 	resp := o.Get(url, query)
 	body, err := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
