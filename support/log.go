@@ -38,7 +38,14 @@ func init()  {
 	wh.outputDrive = "file"
 }
 
-func Cl() *Console  {
+func Cl() *Console {
+	return cl
+}
+
+func Cl2(filePre string) *Console {
+	if filePre != "" {
+		pre = filePre
+	}
 	return cl
 }
 
