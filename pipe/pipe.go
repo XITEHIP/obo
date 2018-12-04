@@ -249,11 +249,13 @@ func (o *Pipe)receiveListen()  {
 	}
 }
 
-func (o *Pipe)SendMsg(msg string, from string, to string )  {
-	api.SendMsg(o.session.Bc.Lpr, o.session.Bc.Br, msg, from, to, o.session.Cookies)
+func (o *Pipe)SendMsg(msg string, to string )  (map[string]interface{}, error)  {
+	to = utils.GetUserNameByNickName(o.Session(), to)
+	return api.SendMsg(o.session.Bc.Lpr, o.session.Bc.Br, msg, o.session.Myself.UserName, to, o.session.Cookies), nil
 }
 
 func (o *Pipe)SendImg(filename string, to string) (map[string]interface{}, error) {
+	to = utils.GetUserNameByNickName(o.Session(), to)
 	mediaId, err := api.UploadMedia(filename, o.session.Myself.UserName, to, o.session.Bc.Lpr, o.session.Bc.Br, o.session.Cookies)
 	if err != nil {
 		support.Cl().Error(err.Error())
