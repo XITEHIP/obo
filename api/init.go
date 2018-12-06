@@ -97,6 +97,12 @@ func WebWxSync(lpr *define.LoginPageResp, br *define.BaseRequest, skl *define.Sy
 	support.GetHttp().SetJar(jar)
 
 	resp := support.GetHttp().PostJsonResp(uri, params)
+	if resp == nil {
+		return nil
+	}
+	if resp.Body == nil {
+		return nil
+	}
 	body, _ := ioutil.ReadAll(resp.Body)
 	bodyMap := make(map[string]interface{})
 	json.Unmarshal(body, &bodyMap)
